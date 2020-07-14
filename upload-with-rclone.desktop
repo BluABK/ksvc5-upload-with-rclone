@@ -1,0 +1,16 @@
+[Desktop Entry]
+Type=Service
+X-KDE-ServiceTypes=KonqPopupMenu/Plugin
+MimeType=inode/directory;
+Actions=uploadToGdrive;
+X-KDE-AuthorizeAction=shell_access
+
+[Desktop Action uploadToGdrive]
+#TryExec=konsole
+#Exec=konsole --workdir %f
+Exec=kdialog --msgbox "Path is %f"
+Icon=system-software-update
+
+Name=Upload to GDrive
+
+Comment=Uploads selected item to Google Drive.
