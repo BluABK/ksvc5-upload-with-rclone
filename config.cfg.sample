@@ -1,0 +1,9 @@
+default_remote="remote:"
+remote_mount_path="/remote/"
+dialog_util=$(which yad)
+terminal=$(which konsole)
+terminal_title_opt="--title"
+terminal_run_cmd_opt="-e"
+terminal_opts="--separate --hide-menubar --hide-tabbar --noclose"
+
+echo "Loaded config."
