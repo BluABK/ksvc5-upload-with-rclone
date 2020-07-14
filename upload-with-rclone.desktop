@@ -2,10 +2,10 @@
 Type=Service
 X-KDE-ServiceTypes=KonqPopupMenu/Plugin
 MimeType=inode/directory;
-Actions=uploadToGdrive;
+Actions=uploadWithRclone;
 X-KDE-AuthorizeAction=shell_access
 
-[Desktop Action uploadToGdrive]
+[Desktop Action uploadWithRclone]
 #Exec=$HOME/.local/share/kservices5/ServiceMenus/upload-with-rclone.sh %f
 Exec=$HOME/.local/share/kservices5/ServiceMenus/upload-with-rclone.sh %f >> $HOME/logs/upload-with-rclone.desktop.log 2>&1
 Icon=system-software-update
