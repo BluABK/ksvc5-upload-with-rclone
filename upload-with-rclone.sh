@@ -9,6 +9,8 @@ fi
 
 # FIXME: Config opts.
 default_remote="tohru:"
+# rclone_opts="-v"
+# rclone_copy_opts="--progress"
 dialog_util=$(which yad)
 
 # Essentials.
@@ -39,21 +41,20 @@ remotes_str=$( printf '%s!' "${remotes[@]}" )
 remotes_str=${remotes_str%?}
 echo "Remotes: $remotes_str)"
 
-# dialog1_cmd="$dialog --title \"$dialog_title\" --form --center --field='Remote':CB \"$remotes_str\" --field='Transfers':NUM 12"
 echo "Launching dialog 1..."
 dialog1=$( \
     $dialog --title "$dialog_title" --form --center \
         --field="Remote   ":CB "$remotes_str" \
         --field="Transfers":NUM 12 \
+        --field="Destination directory":DIR \
+        --field="RClone options:":LBL \
+        --field="Don't be verbose":CHK \
+        --field="RClone Copy options:":LBL \
+        --field="Don't show progress":CHK \
+        --field="Don't include dir":CHK \
+        --field="Script options:":LBL \
+        --field="Don't run via SSH":CHK \
         )
-
-# dialog1=$("$dialog1_cmd")
-# echo "dialog cmd: $dialog1_cmd"
-
-# echo "$dialog --title "$dialog_title" --form --center \
-#         --field="Remote   ":CB "$remotes_str" \
-#         --field="Transfers":NUM 12\
-#     )"
 
 echo "dialog1: $dialog1"
 
@@ -63,7 +64,21 @@ readarray -d '|' -t dialog1_arr < <( echo "$dialog1"  )
 # Set variables for selection.
 sel_remote=${dialog1_arr[0]}
 sel_transfers=${dialog1_arr[1]}
+# if ["${dialog1_arr[2]}" == "$source_path"]
+sel_dest=${dialog1_arr[2]}
+# Label field on index 3
+sel_rclone_opt_noverbose=${dialog1_arr[4]}
+# Label field on index 5
+sel_rclone_copy_opt_noprogress=${dialog1_arr[6]}
+sel_rclone_copy_opt_nodir=${dialog1_arr[7]}
+# Label field on index 8
+sel_opt_nossh=${dialog1_arr[9]}
 
 echo "Selection:"
-echo -e "\tRemote:    $sel_remote"
-echo -e "\tTransfers: $sel_transfers"
+echo -e "\tRemote:       $sel_remote"
+echo -e "\tTransfers:    $sel_transfers"
+echo -e "\tDestination:  $sel_dest"
+echo -e "\tNOT Verbose:  $sel_rclone_opt_noverbose"
+echo -e "\tNOT Progress: $sel_rclone_copy_opt_noprogress"
+echo -e "\tNOT incl dir: $sel_rclone_copy_opt_nodir"
+echo -e "\tNOT SSH:      $sel_opt_nossh"
