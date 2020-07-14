@@ -1,10 +1,19 @@
 #!/bin/bash
 
+# Handle args.
+if [ $# -eq 0 ]; then
+        echo "Usage: $0 <source_path>"
+        exit 1
+fi
+
+
 # FIXME: Config opts.
 default_remote="tohru:"
 dialog_util=$(which yad)
 
 # Essentials.
+source_path="$1"
+echo "source path: $source_path"
 dialog=$(which $dialog_util)
 rclone=$(which rclone)
 dialog_title="Upload with RClone..."
@@ -54,12 +63,6 @@ readarray -d '|' -t dialog1_arr < <( echo "$dialog1"  )
 # Set variables for selection.
 sel_remote=${dialog1_arr[0]}
 sel_transfers=${dialog1_arr[1]}
-
-# if [${dialog1[0]} != '']; then
-#     selected_remote=${dialog1[0]}
-# else
-#     selected_remote=$default_remote
-# fi
 
 echo "Selection:"
 echo -e "\tRemote:    $sel_remote"
