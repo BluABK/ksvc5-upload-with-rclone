@@ -8,7 +8,7 @@ fi
 
 # FIXME: Config opts.
 default_remote="tohru:"
-remote_mount_path="/tohru"
+remote_mount_path="/tohru/"
 dialog_util=$(which yad)
 
 # Essentials.
@@ -82,27 +82,20 @@ echo -e "\tNOT Verbose:  $sel_rclone_opt_noverbose"
 echo -e "\tNOT Progress: $sel_rclone_copy_opt_noprogress"
 echo -e "\tNOT incl dir: $sel_rclone_copy_opt_nodir"
 echo -e "\tNOT SSH:      $sel_opt_nossh"
+echo ""
 
-# Determine dest root:
-# Split dest on '/'.
-readarray -d '/' -t dest_arr_messy < <( echo "$sel_dest"  )
-# # Remove all the useless empty string entries produced by above split.
-# dest_arr=()
-# for item in "${dest_arr_messy[@]}"
-# do
-#     if ["$item" != '']; then
-#         dest_arr+=("$item")
-#     fi
-# done
-
-# # Iteratate remote_mount_path_arr against dest_arr_messy to make sure it's a match.
-# for part in "${remote_mount_path_arr[@]}"
-# do
-#     if ["$part" == "${dest_arr_messy[i]}"]; then
-# done
-
-if [[ "$sel_dest" == "$remote_mount_path"* ]]; then
-    echo "Do stuff"
-else
-    $dialog --image dialog-error --center --title "Error" --text "Destination path does not start with RClone mount path!\n\nMount: $remote_mount_path\nDest: $sel_dest"
+# Perform a sanity check that dest is in fact inside the rclone mount path.
+if [[ "$sel_dest" != "$remote_mount_path"* ]]; then
+    error_msg="Destination path does not start with RClone mount path!\n\nMount: $remote_mount_path\nDest: $sel_dest"
+    echo -e "Error: $error_msg"
+    $dialog --image dialog-error --center --title "Error" --text "$error_msg"
+    exit 1
 fi
+
+# Replace start of dest with the corresponding remote path:
+# 1. Replace all '/' with "\/" to make it regex safe.
+rem_mnt_regexsafe=$(echo "$remote_mount_path" | sed -e 's/\//\\\//g')
+# 2. Use the regex-safe string in the substitution expression.
+remote_dest_path=$( echo "$sel_dest" | sed -e "s/$rem_mnt_regexsafe/$default_remote/" )
+
+echo "Remote dest path: $remote_dest_path"
