@@ -16,13 +16,16 @@ terminal_run_cmd_opt="-e"
 terminal_opts="--separate --hide-menubar --hide-tabbar --noclose" 
 
 # Essentials.
-source_path="$1"
 readarray -d '/' -t remote_mount_path_arr < <( echo "$remote_mount_path"  )
+source_path="$1"
+readarray -d '/' -t source_path_arr < <( echo "$source_path"  )
+source_dir="${source_path_arr[-1]}"
 dialog=$(which $dialog_util)
 rclone=$(which rclone)
 dialog_title="Upload with RClone..."
 
 echo "source path: $source_path"
+echo "source dir: $source_dir"
 
 # Get list of remotes.
 readarray -t remotes < <( $rclone listremotes )
@@ -55,7 +58,8 @@ dialog1=$( \
         --field="Don't be verbose":CHK \
         --field="RClone Copy options:":LBL \
         --field="Don't show progress":CHK \
-        --field="Don't include dir (FIXME: Implement!)":CHK \
+        --field="Don't include dir":CHK \
+        --field="Dry run":CHK \
         --field="Script options:":LBL \
         --field="Don't run via SSH (FIXME: Implement!)":CHK \
         )
@@ -75,8 +79,9 @@ sel_rclone_opt_noverbose=${dialog1_arr[4]}
 # Label field on index 5
 sel_rclone_copy_opt_noprogress=${dialog1_arr[6]}
 sel_rclone_copy_opt_nodir=${dialog1_arr[7]}
-# Label field on index 8
-sel_opt_nossh=${dialog1_arr[9]}
+sel_rclone_copy_opt_dryrun=${dialog1_arr[8]}
+# Label field on index 9
+sel_opt_nossh=${dialog1_arr[10]}
 
 echo "Selection:"
 echo -e "\tRemote:       $sel_remote"
@@ -98,6 +103,9 @@ fi
 if [ "$sel_rclone_copy_opt_noprogress" != "TRUE" ]; then
     rclone_copy_opts="$rclone_copy_opts --progress"
 fi
+if [ "$sel_rclone_copy_opt_dryrun" == "TRUE" ]; then
+    rclone_copy_opts="$rclone_copy_opts -n"
+fi
 
 
 # Perform a sanity check that dest is in fact inside the rclone mount path.
@@ -113,6 +121,12 @@ fi
 rem_mnt_regexsafe=$(echo "$remote_mount_path" | sed -e 's/\//\\\//g')
 # 2. Use the regex-safe string in the substitution expression.
 remote_dest_path=$( echo "$sel_dest" | sed -e "s/$rem_mnt_regexsafe/$sel_remote/" )
+
+# Make any final adjustments to the remote dest path:
+# Handle inclusion of source dir (if not included, rclone will copy contents, not dir itself)
+if [ "$sel_rclone_copy_opt_nodir" != "TRUE" ]; then
+    remote_dest_path="$remote_dest_path/$source_dir"
+fi
 
 echo "Remote dest path: $remote_dest_path"
 
