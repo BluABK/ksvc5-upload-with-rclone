@@ -10,6 +10,10 @@ fi
 default_remote="tohru:"
 remote_mount_path="/tohru/"
 dialog_util=$(which yad)
+terminal=$(which konsole)
+terminal_title_opt="--title"
+terminal_run_cmd_opt="-e"
+terminal_opts="--separate --hide-menubar --hide-tabbar --noclose" 
 
 # Essentials.
 source_path="$1"
@@ -51,9 +55,9 @@ dialog1=$( \
         --field="Don't be verbose":CHK \
         --field="RClone Copy options:":LBL \
         --field="Don't show progress":CHK \
-        --field="Don't include dir":CHK \
+        --field="Don't include dir (FIXME: Implement!)":CHK \
         --field="Script options:":LBL \
-        --field="Don't run via SSH":CHK \
+        --field="Don't run via SSH (FIXME: Implement!)":CHK \
         )
 
 echo "dialog1: $dialog1"
@@ -84,6 +88,18 @@ echo -e "\tNOT incl dir: $sel_rclone_copy_opt_nodir"
 echo -e "\tNOT SSH:      $sel_opt_nossh"
 echo ""
 
+# Compile opts strings.
+rclone_opts=""
+rclone_copy_opts=""
+script_opts=""
+if [ "$sel_rclone_opt_noverbose" != "TRUE" ]; then
+    rclone_opts="$rclone_opts -v"
+fi
+if [ "$sel_rclone_copy_opt_noprogress" != "TRUE" ]; then
+    rclone_copy_opts="$rclone_copy_opts --progress"
+fi
+
+
 # Perform a sanity check that dest is in fact inside the rclone mount path.
 if [[ "$sel_dest" != "$remote_mount_path"* ]]; then
     error_msg="Destination path does not start with RClone mount path!\n\nMount: $remote_mount_path\nDest: $sel_dest"
@@ -96,6 +112,10 @@ fi
 # 1. Replace all '/' with "\/" to make it regex safe.
 rem_mnt_regexsafe=$(echo "$remote_mount_path" | sed -e 's/\//\\\//g')
 # 2. Use the regex-safe string in the substitution expression.
-remote_dest_path=$( echo "$sel_dest" | sed -e "s/$rem_mnt_regexsafe/$default_remote/" )
+remote_dest_path=$( echo "$sel_dest" | sed -e "s/$rem_mnt_regexsafe/$sel_remote/" )
 
 echo "Remote dest path: $remote_dest_path"
+
+# Finally spawn a terminal with the rclone copy process!
+title="RClone copy: $source_path --> $remote_dest_path"
+exec $terminal $terminal_opts $terminal_title_opt "$title" $terminal_run_cmd_opt $rclone $rclone_opts copy $rclone_copy_opts --transfers=$sel_transfers "$source_path" "$remote_dest_path"
