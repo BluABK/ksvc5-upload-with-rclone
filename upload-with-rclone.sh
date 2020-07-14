@@ -125,11 +125,13 @@ remote_dest_path=$( echo "$sel_dest" | sed -e "s/$rem_mnt_regexsafe/$sel_remote/
 # Make any final adjustments to the remote dest path:
 # Handle inclusion of source dir (if not included, rclone will copy contents, not dir itself)
 if [ "$sel_rclone_copy_opt_nodir" != "TRUE" ]; then
-    remote_dest_path="$remote_dest_path/$source_dir"
+    # Use echo to filter out strange junk data that sometimes occurs.
+    remote_dest_path=$(echo "$remote_dest_path/$source_dir")
 fi
 
 echo "Remote dest path: $remote_dest_path"
 
 # Finally spawn a terminal with the rclone copy process!
 title="RClone copy: $source_path --> $remote_dest_path"
+echo "rclone cmd: $rclone $rclone_opts copy $rclone_copy_opts --transfers=$sel_transfers "$source_path" "$remote_dest_path""
 exec $terminal $terminal_opts $terminal_title_opt "$title" $terminal_run_cmd_opt $rclone $rclone_opts copy $rclone_copy_opts --transfers=$sel_transfers "$source_path" "$remote_dest_path"
