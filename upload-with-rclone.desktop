@@ -6,11 +6,10 @@ Actions=uploadToGdrive;
 X-KDE-AuthorizeAction=shell_access
 
 [Desktop Action uploadToGdrive]
-#TryExec=konsole
-#Exec=konsole --workdir %f
-Exec=kdialog --msgbox "Path is %f"
+#Exec=$HOME/.local/share/kservices5/ServiceMenus/upload-with-rclone.sh %f
+Exec=$HOME/.local/share/kservices5/ServiceMenus/upload-with-rclone.sh %f >> $HOME/logs/upload-with-rclone.desktop.log 2>&1
 Icon=system-software-update
 
-Name=Upload to GDrive
+Name=Upload with RClone...
 
-Comment=Uploads selected item to Google Drive.
+Comment=Uploads selected item using rclone.
